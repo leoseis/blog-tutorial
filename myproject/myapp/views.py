@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 
 from django.http import HttpResponse
 
@@ -31,4 +32,26 @@ class PostListAPIView(APIView):
         )
 
         # Send the serialized data back to the client.
+        return Response(serializer.data)
+
+
+
+
+class PostDetailAPIView(APIView):
+    """
+    API view for retrieving one blog post.
+    """
+
+    def get(self, request, post_id):
+        # Find the post using the ID supplied in the URL.
+        post = get_object_or_404(
+            Post,
+            id=post_id
+        )
+
+        # We are serializing ONE object,
+        # so we do not use many=True.
+        serializer = PostSerializer(post)
+
+        # Return the post as JSON.
         return Response(serializer.data)
