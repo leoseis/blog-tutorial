@@ -1,6 +1,4 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 
 from rest_framework.views import APIView
@@ -10,48 +8,71 @@ from .models import Post
 from .serializers import PostSerializer
 
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
 def home(request):
-    return HttpResponse("Hello world my django is working")
-# Create your views here.
+    return HttpResponse(
+        "Hello world my django is working"
+    )
 
 
-
-# DRF API view
-class PostListAPIView(APIView):
+class PostListCreateAPIView(APIView):
 
     def get(self, request):
-
-        # Get all blog posts from the database.
         posts = Post.objects.all()
 
-        # Convert the Django objects into JSON-ready data.
-        # many=True is required because we have multiple posts.
         serializer = PostSerializer(
             posts,
             many=True
         )
 
-        # Send the serialized data back to the client.
         return Response(serializer.data)
 
+    def post(self, request):
+        serializer = PostSerializer(
+            data=request.data
+        )
 
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=201
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
 
 
 class PostDetailAPIView(APIView):
-    """
-    API view for retrieving one blog post.
-    """
 
     def get(self, request, post_id):
-        # Find the post using the ID supplied in the URL.
+
         post = get_object_or_404(
             Post,
             id=post_id
         )
 
-        # We are serializing ONE object,
-        # so we do not use many=True.
         serializer = PostSerializer(post)
 
-        # Return the post as JSON.
         return Response(serializer.data)
+
+
+
+
+class ProtectedAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        return Response({
+            "message": "You are authenticated!",
+            "username": request.user.username
+        })
