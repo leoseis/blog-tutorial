@@ -1,5 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from rest_framework import generics
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework.filters import (
+    SearchFilter,
+    OrderingFilter,
+)
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,11 +15,7 @@ from rest_framework.response import Response
 from .models import Post
 from .serializers import PostSerializer
 
-
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
 
 def home(request):
     return HttpResponse(
@@ -19,35 +23,36 @@ def home(request):
     )
 
 
-class PostListCreateAPIView(APIView):
+class PostListCreateAPIView(generics.ListCreateAPIView):
 
-    def get(self, request):
-        posts = Post.objects.all()
+    queryset = Post.objects.all()
 
-        serializer = PostSerializer(
-            posts,
-            many=True
-        )
+    serializer_class = PostSerializer
 
-        return Response(serializer.data)
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+    ]
 
-    def post(self, request):
-        serializer = PostSerializer(
-            data=request.data
-        )
+    filterset_fields = [
+        "author",
+    ]
 
-        if serializer.is_valid():
-            serializer.save()
+    search_fields = [
+        "title",
+        "content",
+        "author",
+    ]
 
-            return Response(
-                serializer.data,
-                status=201
-            )
+    ordering_fields = [
+        "title",
+        "created_at",
+    ]
 
-        return Response(
-            serializer.errors,
-            status=400
-        )
+    ordering = [
+        "-created_at",
+    ]
 
 
 class PostDetailAPIView(APIView):
