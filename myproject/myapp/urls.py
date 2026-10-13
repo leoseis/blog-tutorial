@@ -7,9 +7,7 @@ urlpatterns = [
     # Normal Django page
     path(
         "",
-        views.home,
-        name="home"
-    ),
+        views.home,    name="home" ),
 
     # Blog API
     # GET = list posts
