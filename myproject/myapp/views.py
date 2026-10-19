@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect
 from django.http import HttpResponse
 from rest_framework import generics
+from django.http import HttpResponse
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -14,6 +16,7 @@ from rest_framework.response import Response
 
 from .models import Post
 from .serializers import PostSerializer
+from .forms import PostForm
 
 from rest_framework.permissions import IsAuthenticated
 
@@ -82,4 +85,24 @@ class ProtectedAPIView(APIView):
             "username": request.user.username
         })
 
-    # khhhh
+
+
+def create_post(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("post_success")
+    else:
+        form = PostForm()
+
+    return render(
+        request,
+        "myapp/create_post.html",
+        {"form": form},
+    )
+
+
+
+def post_success(request):
+       return HttpResponse("Blog post created successfully!")

@@ -24,4 +24,8 @@ urlpatterns = [
         views.PostDetailAPIView.as_view(),
         name="api_post_detail"
     ),
+
+
+    path("posts/create/", views.create_post, name="create_post"),
+    path("posts/success/", views.post_success, name="post_success"),
 ]
